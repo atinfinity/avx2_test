@@ -1,4 +1,5 @@
 #include "normHamming.hpp"
+#include "convertScale.hpp"
 #include <opencv2/core.hpp>
 #include <iostream>
 #include <cmath>
@@ -28,6 +29,31 @@ double launch_normHamming
     return time;
 }
 
+double launch_convertTo
+(
+    const cv::Mat& src,
+    cv::Mat& dst,
+    int type,
+    double alpha,
+    double beta, 
+    enum CONVERT_SCALE_IMPL_TYPE impl_type,
+    const int loop_num
+)
+{
+    cv::TickMeter tm;
+    double time = 0.0;
+    for (int i = 0; i <= loop_num; i++) {
+        tm.reset();
+        tm.start();
+        convertTo(src, dst, type, alpha, beta, impl_type);
+        tm.stop();
+        time += (i > 0) ? (tm.getTimeMilli()) : 0;
+    }
+    time /= loop_num;
+
+    return time;
+}
+
 int main(int argc, const char* argv[])
 {
     bool hasAVX2 = cv::checkHardwareSupport(CV_CPU_AVX2);
@@ -35,6 +61,7 @@ int main(int argc, const char* argv[])
 
     cv::Size sz = sz4320p;
     std::cout << "size: " << sz << std::endl << std::endl;
+
     cv::Mat src(sz, CV_8UC1, cv::Scalar(0));
     cv::randu(src, cv::Scalar(0), cv::Scalar(255));
 
@@ -54,6 +81,31 @@ int main(int argc, const char* argv[])
     const int loop_num = 10;
     double time_naive = launch_normHamming(src, NORM_HAMMING_IMPL_TYPE_NAIVE, loop_num);
     double time_avx2  = launch_normHamming(src, NORM_HAMMING_IMPL_TYPE_AVX2,  loop_num);
+    std::cout << "Naive: " << time_naive << " ms." << std::endl;
+    std::cout << "AVX2: " << time_avx2 << " ms." << std::endl << std::endl;
+
+    cv::Mat src2(sz, CV_16SC1, cv::Scalar(0));
+    cv::randu(src2, cv::Scalar(0), cv::Scalar(255));
+
+    // verification
+    cv::Mat dst_naive(sz, CV_32SC1, cv::Scalar(0));
+    cv::Mat dst_avx2(sz, CV_32SC1, cv::Scalar(0));
+    cv::Mat diff(sz, CV_32SC1, cv::Scalar(0));
+    convertTo(src2, dst_naive, dst_naive.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE);
+    convertTo(src2, dst_avx2, dst_avx2.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2);
+    cv::absdiff(dst_naive, dst_avx2, diff);
+    if (cv::countNonZero(diff) > 0)
+    {
+        std::cerr << "verify: failed." << std::endl;
+        return -1;
+    }
+    else
+    {
+        std::cerr << "verify: passed." << std::endl << std::endl;
+    }
+
+    time_naive = launch_convertTo(src2, dst_naive, dst_naive.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE, loop_num);
+    time_avx2 = launch_convertTo(src2, dst_avx2, dst_avx2.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2, loop_num);
     std::cout << "Naive: " << time_naive << " ms." << std::endl;
     std::cout << "AVX2: " << time_avx2 << " ms." << std::endl;
 
