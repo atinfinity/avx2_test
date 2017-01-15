@@ -10,7 +10,7 @@ const cv::Size sz4320p = cv::Size(7680, 4320); // 8K
 double launch_normHamming
 (
     const cv::Mat& src,
-    enum IMPL_TYPE impl_type, 
+    enum NORM_HAMMING_IMPL_TYPE impl_type,
     const int loop_num
 )
 {
@@ -39,8 +39,8 @@ int main(int argc, const char* argv[])
     cv::randu(src, cv::Scalar(0), cv::Scalar(255));
 
     // verification
-    double result_naive = normHamming(src, IMPL_TYPE_NAIVE);
-    double result_avx2  = normHamming(src, IMPL_TYPE_AVX2);
+    double result_naive = normHamming(src, NORM_HAMMING_IMPL_TYPE_NAIVE);
+    double result_avx2  = normHamming(src, NORM_HAMMING_IMPL_TYPE_AVX2);
     if (fabs(result_avx2 - result_naive) > 0)
     {
         std::cerr << "verify: failed." << std::endl;
@@ -52,8 +52,8 @@ int main(int argc, const char* argv[])
     }
 
     const int loop_num = 10;
-    double time_naive = launch_normHamming(src, IMPL_TYPE_NAIVE, loop_num);
-    double time_avx2  = launch_normHamming(src, IMPL_TYPE_AVX2,  loop_num);
+    double time_naive = launch_normHamming(src, NORM_HAMMING_IMPL_TYPE_NAIVE, loop_num);
+    double time_avx2  = launch_normHamming(src, NORM_HAMMING_IMPL_TYPE_AVX2,  loop_num);
     std::cout << "Naive: " << time_naive << " ms." << std::endl;
     std::cout << "AVX2: " << time_avx2 << " ms." << std::endl;
 

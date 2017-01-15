@@ -70,7 +70,7 @@ int normHamming_naive(const uchar* a, int n)
     return result;
 }
 
-double normHamming(cv::InputArray src_, enum IMPL_TYPE impl_type)
+double normHamming(cv::InputArray src_, enum NORM_HAMMING_IMPL_TYPE impl_type)
 {
     cv::Mat src = src_.getMat();
     int depth = src.depth(), cn = src.channels();
@@ -80,10 +80,10 @@ double normHamming(cv::InputArray src_, enum IMPL_TYPE impl_type)
 
     switch (impl_type)
     {
-    case IMPL_TYPE_NAIVE:
+    case NORM_HAMMING_IMPL_TYPE_NAIVE:
         result = normHamming_naive(data, (int)len);
         break;
-    case IMPL_TYPE_AVX2:
+    case NORM_HAMMING_IMPL_TYPE_AVX2:
         result = normHamming_avx2(data, (int)len);
         break;
     }
