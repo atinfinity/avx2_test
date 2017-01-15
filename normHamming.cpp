@@ -21,6 +21,19 @@ static inline int _mm256_extract_epi32_(__m256i reg, const int i)
     return reg_data[i];
 }
 
+int normHamming_naive(const uchar* a, int n)
+{
+    int i = 0;
+    int result = 0;
+
+    for (; i <= n - 4; i += 4)
+        result += popCountTable[a[i]] + popCountTable[a[i + 1]] +
+        popCountTable[a[i + 2]] + popCountTable[a[i + 3]];
+    for (; i < n; i++)
+        result += popCountTable[a[i]];
+    return result;
+}
+
 int normHamming_avx2(const uchar* a, int n)
 {
     int i = 0;
@@ -48,19 +61,6 @@ int normHamming_avx2(const uchar* a, int n)
         _r0 = _mm256_add_epi32(_r0, _mm256_shuffle_epi32(_r0, 2));
         result = _mm256_extract_epi32_(_mm256_add_epi32(_r0, _mm256_permute2x128_si256(_r0, _r0, 1)), 0);
     }
-
-    for (; i <= n - 4; i += 4)
-        result += popCountTable[a[i]] + popCountTable[a[i + 1]] +
-        popCountTable[a[i + 2]] + popCountTable[a[i + 3]];
-    for (; i < n; i++)
-        result += popCountTable[a[i]];
-    return result;
-}
-
-int normHamming_naive(const uchar* a, int n)
-{
-    int i = 0;
-    int result = 0;
 
     for (; i <= n - 4; i += 4)
         result += popCountTable[a[i]] + popCountTable[a[i + 1]] +
