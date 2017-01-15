@@ -66,16 +66,17 @@ int main(int argc, const char* argv[])
     cv::randu(src, cv::Scalar(0), cv::Scalar(255));
 
     // verification
+    std::cout << "[normHamming]" << std::endl;
     double result_naive = normHamming(src, NORM_HAMMING_IMPL_TYPE_NAIVE);
     double result_avx2  = normHamming(src, NORM_HAMMING_IMPL_TYPE_AVX2);
     if (fabs(result_avx2 - result_naive) > 0)
     {
-        std::cerr << "verify: failed." << std::endl;
+        std::cout << "verify: failed." << std::endl;
         return -1;
     }
     else
     {
-        std::cerr << "verify: passed." << std::endl << std::endl;
+        std::cout << "verify: passed." << std::endl << std::endl;
     }
 
     const int loop_num = 10;
@@ -88,24 +89,25 @@ int main(int argc, const char* argv[])
     cv::randu(src2, cv::Scalar(0), cv::Scalar(255));
 
     // verification
+    std::cout << "[cvtScale]" << std::endl;
     cv::Mat dst_naive(sz, CV_32SC1, cv::Scalar(0));
     cv::Mat dst_avx2(sz, CV_32SC1, cv::Scalar(0));
     cv::Mat diff(sz, CV_32SC1, cv::Scalar(0));
-    convertTo(src2, dst_naive, dst_naive.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE);
-    convertTo(src2, dst_avx2, dst_avx2.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2);
+    convertTo(src2, dst_naive, dst_naive.depth(), 2.0, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE);
+    convertTo(src2, dst_avx2, dst_avx2.depth(), 2.0, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2);
     cv::absdiff(dst_naive, dst_avx2, diff);
     if (cv::countNonZero(diff) > 0)
     {
-        std::cerr << "verify: failed." << std::endl;
+        std::cout << "verify: failed." << std::endl;
         return -1;
     }
     else
     {
-        std::cerr << "verify: passed." << std::endl << std::endl;
+        std::cout << "verify: passed." << std::endl << std::endl;
     }
 
-    time_naive = launch_convertTo(src2, dst_naive, dst_naive.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE, loop_num);
-    time_avx2 = launch_convertTo(src2, dst_avx2, dst_avx2.depth(), 0.5, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2, loop_num);
+    time_naive = launch_convertTo(src2, dst_naive, dst_naive.depth(), 2.0, 1.0, CONVERT_SCALE_IMPL_TYPE_NAIVE, loop_num);
+    time_avx2 = launch_convertTo(src2, dst_avx2, dst_avx2.depth(), 2.0, 1.0, CONVERT_SCALE_IMPL_TYPE_AVX2, loop_num);
     std::cout << "Naive: " << time_naive << " ms." << std::endl;
     std::cout << "AVX2: " << time_avx2 << " ms." << std::endl;
 
